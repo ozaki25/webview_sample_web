@@ -23,7 +23,7 @@ class Main extends Component {
     this.state = { file: null, src: null };
   }
 
-  onClickFileSelect = () => {}; // this.input.click();
+  onClickFileSelect = () => this.input.click();
 
   onChange = (e) => {
     const file = e.target.files.item(0);
@@ -39,7 +39,6 @@ class Main extends Component {
         <form>
           <FormGroup>
             <FormControl
-              id="input-file"
               style={styles.inputFile}
               type="file"
               name="image"
