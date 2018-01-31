@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
-import { Button, ControlLabel, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
+import { Button, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
+
+const styles = {
+  inputFile: {
+    display: 'none',
+  },
+};
 
 const post = async (file) => {
   const url = 'http://localhost:8080';
@@ -17,6 +23,8 @@ class Main extends Component {
     this.state = { file: null, src: null };
   }
 
+  onClickFileSelect = () => {}; // this.input.click();
+
   onChange = (e) => {
     const file = e.target.files.item(0);
     const src = window.URL.createObjectURL(file);
@@ -30,8 +38,19 @@ class Main extends Component {
       <Grid>
         <form>
           <FormGroup>
-            <ControlLabel>Image</ControlLabel>
-            <FormControl type="file" name="image" onChange={this.onChange} />
+            <FormControl
+              id="input-file"
+              style={styles.inputFile}
+              type="file"
+              name="image"
+              onChange={this.onChange}
+              inputRef={(ref) => {
+                this.input = ref;
+              }}
+            />
+            <Button id="file-select" onClick={this.onClickFileSelect}>
+              ファイル選択
+            </Button>
           </FormGroup>
           <Button onClick={this.onSubmit}>Submit</Button>
         </form>
