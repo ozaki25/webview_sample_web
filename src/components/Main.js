@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
+import ImageDataConverter from '../utils/ImageDataConverter';
 
 const styles = {
   inputFile: {
@@ -27,6 +28,18 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = { file: null, src: null };
+  }
+
+  componentWillMount() {
+    document.body.addEventListener('uploaded', (e) => {
+      // const { src } = e.detail;
+      const src = localStorage.getItem('src');
+      if (src) {
+        const file = new ImageDataConverter(src).dataURItoBlob();
+        this.setState({ src: `data:image/png:base64,${src}`, file });
+        // this.setState({ src, file });
+      }
+    });
   }
 
   onClickFileSelect = () => this.input.click();
@@ -61,6 +74,7 @@ class Main extends Component {
           <Button onClick={this.onSubmit}>Submit</Button>
         </form>
         {this.state.src ? <Image src={this.state.src} responsive /> : null}
+        <div>{this.state.src}</div>
       </Grid>
     );
   }
