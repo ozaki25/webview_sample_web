@@ -13,8 +13,14 @@ const post = async (file) => {
   formData.append('file', file);
   const option = { method: 'post', body: formData };
 
-  const response = await fetch(url, option);
-  alert(response.status);
+  try {
+    const response = await fetch(url, option);
+    alert(response.status);
+  } catch (e) {
+    // android用
+    const response = await fetch('http://10.0.2.2:8080', option);
+    alert(response.status);
+  }
 };
 
 class Main extends Component {
@@ -39,6 +45,7 @@ class Main extends Component {
         <form>
           <FormGroup>
             <FormControl
+              id="input-file"
               style={styles.inputFile}
               type="file"
               name="image"
