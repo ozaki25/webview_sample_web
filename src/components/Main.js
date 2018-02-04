@@ -53,7 +53,7 @@ class Main extends Component {
   };
 
   onSubmit = async () => {
-    this.setState({ src: null, mode: 'loading' });
+    this.setState({ src: null, mode: 'loading...' });
     const response = await post(this.state.file);
     if (response.ok) {
       const blob = await response.blob();
