@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
+import ImageDataConverter from '../utils/ImageDataConverter';
 
 const styles = {
   inputFile: {
@@ -28,6 +29,22 @@ class Main extends Component {
     super(props);
     this.state = { file: null, src: null };
   }
+
+  componentWillMount() {
+    this.onCaptureFromApp();
+  }
+
+  onCaptureFromApp = () => {
+    document.body.addEventListener('uploaded', (e) => {
+      const { src } = e.detail;
+      if (src) {
+        const file = new ImageDataConverter(src).dataURItoBlob();
+        this.setState({ file, src });
+      } else {
+        alert('error');
+      }
+    });
+  };
 
   onClickFileSelect = () => this.input.click();
 
