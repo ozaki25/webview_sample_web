@@ -15,19 +15,17 @@ const post = async (file) => {
   const option = { method: 'post', body: formData };
 
   try {
-    const response = await fetch(url, option);
-    alert(response.status);
+    return await fetch(url, option);
   } catch (e) {
     // android用
-    const response = await fetch('http://10.0.2.2:8080', option);
-    alert(response.status);
+    return fetch('http://10.0.2.2:8080', option);
   }
 };
 
 class Main extends Component {
   constructor(props) {
     super(props);
-    this.state = { file: null, src: null };
+    this.state = { file: null, src: null, mode: '' };
   }
 
   componentWillMount() {
@@ -39,7 +37,7 @@ class Main extends Component {
       const { src } = e.detail;
       if (src) {
         const file = new ImageDataConverter(src).dataURItoBlob();
-        this.setState({ file, src });
+        this.setState({ file, src, mode: 'preview' });
       } else {
         alert('error');
       }
@@ -51,10 +49,30 @@ class Main extends Component {
   onChange = (e) => {
     const file = e.target.files.item(0);
     const src = window.URL.createObjectURL(file);
-    this.setState({ file, src });
+    this.setState({ file, src, mode: 'preview' });
   };
 
-  onSubmit = () => post(this.state.file);
+  onSubmit = async () => {
+    this.setState({ src: null, mode: 'loading' });
+    const response = await post(this.state.file);
+    if (response.ok) {
+      const blob = await response.blob();
+      const src = window.URL.createObjectURL(blob);
+      this.setState({ src, mode: 'download' });
+    } else {
+      alert('response error');
+    }
+  };
+
+  renderImage() {
+    const { mode } = this.state;
+    return (
+      <div>
+        <h3>{mode}</h3>
+        {this.state.src ? <Image src={this.state.src} responsive /> : null}
+      </div>
+    );
+  }
 
   render() {
     return (
@@ -77,7 +95,7 @@ class Main extends Component {
           </FormGroup>
           <Button onClick={this.onSubmit}>Submit</Button>
         </form>
-        {this.state.src ? <Image src={this.state.src} responsive /> : null}
+        {this.renderImage()}
       </Grid>
     );
   }
