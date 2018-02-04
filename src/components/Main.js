@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Button, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
 import ImageDataConverter from '../utils/ImageDataConverter';
 
+let apiUrl = 'http://localhost:8080';
+
 const styles = {
   inputFile: {
     display: 'none',
@@ -9,23 +11,23 @@ const styles = {
 };
 
 const post = async (file) => {
-  const url = 'http://localhost:8080';
   const formData = new FormData();
   formData.append('file', file);
   const option = { method: 'post', body: formData };
 
   try {
-    return await fetch(url, option);
+    return await fetch(apiUrl, option);
   } catch (e) {
     // android用
-    return fetch('http://10.0.2.2:8080', option);
+    apiUrl = 'http://10.0.2.2:8080';
+    return fetch(apiUrl, option);
   }
 };
 
 class Main extends Component {
   constructor(props) {
     super(props);
-    this.state = { file: null, src: null, mode: '' };
+    this.state = { file: null, src: null, imageId: null };
   }
 
   componentWillMount() {
@@ -35,41 +37,35 @@ class Main extends Component {
   onCaptureFromApp = () => {
     document.body.addEventListener('uploaded', (e) => {
       const { src } = e.detail;
-      if (src) {
-        const file = new ImageDataConverter(src).dataURItoBlob();
-        this.setState({ file, src, mode: 'preview' });
-      } else {
-        alert('error');
-      }
+      const file = new ImageDataConverter(src).dataURItoBlob();
+      this.setState({ file, src });
     });
   };
 
   onClickFileSelect = () => this.input.click();
 
-  onChange = (e) => {
+  onFileChange = (e) => {
     const file = e.target.files.item(0);
     const src = window.URL.createObjectURL(file);
-    this.setState({ file, src, mode: 'preview' });
+    this.setState({ file, src });
   };
 
   onSubmit = async () => {
-    this.setState({ src: null, mode: 'loading...' });
     const response = await post(this.state.file);
     if (response.ok) {
-      const blob = await response.blob();
-      const src = window.URL.createObjectURL(blob);
-      this.setState({ src, mode: 'download' });
+      const body = await response.json();
+      const imageId = body.id;
+      this.setState({ imageId, file: null, src: null });
     } else {
-      alert('response error');
+      console.error(response);
     }
   };
 
-  renderImage() {
-    const { mode } = this.state;
+  renderPreview() {
     return (
       <div>
-        <h3>{mode}</h3>
-        {this.state.src ? <Image src={this.state.src} responsive /> : null}
+        <h3>プレビュー</h3>
+        <Image src={this.state.src} responsive />
       </div>
     );
   }
@@ -77,25 +73,30 @@ class Main extends Component {
   render() {
     return (
       <Grid>
-        <form>
-          <FormGroup>
-            <FormControl
-              id="input-file"
-              style={styles.inputFile}
-              type="file"
-              name="image"
-              onChange={this.onChange}
-              inputRef={(ref) => {
-                this.input = ref;
-              }}
-            />
-            <Button id="file-select" onClick={this.onClickFileSelect}>
-              ファイル選択
-            </Button>
-          </FormGroup>
-          <Button onClick={this.onSubmit}>Submit</Button>
-        </form>
-        {this.renderImage()}
+        <FormGroup>
+          <FormControl
+            id="input-file"
+            style={styles.inputFile}
+            type="file"
+            name="image"
+            onChange={this.onFileChange}
+            inputRef={(ref) => {
+              this.input = ref;
+            }}
+          />
+          <Button id="file-select" onClick={this.onClickFileSelect}>
+            ファイル選択
+          </Button>
+        </FormGroup>
+
+        <Button onClick={this.onSubmit} disabled={!this.state.file}>
+          Upload
+        </Button>
+        <Button href={`${apiUrl}/${this.state.imageId}.jpg`} disabled={!this.state.imageId}>
+          Download
+        </Button>
+
+        {this.state.src ? this.renderPreview() : null}
       </Grid>
     );
   }
