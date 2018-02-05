@@ -8,7 +8,7 @@ const ButtonGroup = ({
     <Button onClick={onSubmit} disabled={!canUpload}>
       Upload
     </Button>
-    <Button href={`${apiUrl}/${imageId}.jpg`} disabled={!imageId}>
+    <Button href={`${apiUrl}/${imageId}.jpg`} disabled={!imageId} download>
       Download
     </Button>
   </Fragment>
