@@ -3,6 +3,8 @@
   "parser": "babel-eslint",
   "rules": {
     "no-nested-ternary": [0],
+    "no-return-assign": [0],
+    "react/prop-types": [0],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "max-len": [1, { "code": 100 }]
   },

@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-import { Button, FormControl, FormGroup, Grid, Image } from 'react-bootstrap';
+import { Grid } from 'react-bootstrap';
 import ImageDataConverter from '../utils/ImageDataConverter';
 
-let apiUrl = 'http://localhost:8080';
+import Form from './Form';
+import ButtonGroup from './ButtonGroup';
+import Preview from './Preview';
 
-const styles = {
-  inputFile: {
-    display: 'none',
-  },
-};
+// スマホ実機で動かす場合はネットワークのIPを設定する
+let apiUrl = 'http://localhost:8080';
 
 const post = async (file) => {
   const formData = new FormData();
@@ -18,7 +17,7 @@ const post = async (file) => {
   try {
     return await fetch(apiUrl, option);
   } catch (e) {
-    // android用
+    // androidシミュレータ用
     apiUrl = 'http://10.0.2.2:8080';
     return fetch(apiUrl, option);
   }
@@ -31,23 +30,23 @@ class Main extends Component {
   }
 
   componentWillMount() {
-    this.onCaptureFromApp();
+    this.onFileChangeFromApp();
   }
 
-  onCaptureFromApp = () => {
+  // アプリからのアップロードされたファイルを処理する
+  onFileChangeFromApp = () => {
     document.body.addEventListener('uploaded', (e) => {
       const { src } = e.detail;
       const file = new ImageDataConverter(src).dataURItoBlob();
-      this.setState({ file, src });
+      this.setState({ file, src, imageId: null });
     });
   };
 
-  onClickFileSelect = () => this.input.click();
-
+  // ブラウザからアップロードされたファイルを処理する
   onFileChange = (e) => {
     const file = e.target.files.item(0);
     const src = window.URL.createObjectURL(file);
-    this.setState({ file, src });
+    this.setState({ file, src, imageId: null });
   };
 
   onSubmit = async () => {
@@ -55,48 +54,26 @@ class Main extends Component {
     if (response.ok) {
       const body = await response.json();
       const imageId = body.id;
-      this.setState({ imageId, file: null, src: null });
-    } else {
-      console.error(response);
+      this.setState({
+        imageId,
+        file: null,
+        src: null,
+      });
+      alert('Upload Success!');
     }
   };
-
-  renderPreview() {
-    return (
-      <div>
-        <h3>プレビュー</h3>
-        <Image src={this.state.src} responsive />
-      </div>
-    );
-  }
 
   render() {
     return (
       <Grid>
-        <FormGroup>
-          <FormControl
-            id="input-file"
-            style={styles.inputFile}
-            type="file"
-            name="image"
-            onChange={this.onFileChange}
-            inputRef={(ref) => {
-              this.input = ref;
-            }}
-          />
-          <Button id="file-select" onClick={this.onClickFileSelect}>
-            ファイル選択
-          </Button>
-        </FormGroup>
-
-        <Button onClick={this.onSubmit} disabled={!this.state.file}>
-          Upload
-        </Button>
-        <Button href={`${apiUrl}/${this.state.imageId}.jpg`} disabled={!this.state.imageId}>
-          Download
-        </Button>
-
-        {this.state.src ? this.renderPreview() : null}
+        <Form onFileChange={this.onFileChange} />
+        <ButtonGroup
+          onSubmit={this.onSubmit}
+          canUpload={!!this.state.file}
+          imageId={this.state.imageId}
+          apiUrl={apiUrl}
+        />
+        {this.state.src ? <Preview src={this.state.src} /> : null}
       </Grid>
     );
   }
